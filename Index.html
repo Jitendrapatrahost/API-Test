@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Data Interface</title>
+  <style>
+    body {
+      background: #eef1f5;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    form input, form textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .message {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Store User Info</h2>
+  <form id="userForm">
+    <input type="text" id="username" placeholder="UserName" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <textarea id="message" placeholder="Message" required></textarea>
+    <button type="submit">Submit</button>
+    <div class="message" id="responseMsg"></div>
+  </form>
+
+  <h2>Saved Users</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>UserName</th>
+        <th>Password</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody id="userTableBody">
+      <!-- Users will be inserted here -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const apiUrl = 'https://6835b499cd78db2058c2c69f.mockapi.io/User';
+
+  function fetchUsers() {
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        const tableBody = document.getElementById('userTableBody');
+        tableBody.innerHTML = '';
+        data.forEach(user => {
+          const row = `<tr>
+            <td>${user.id}</td>
+            <td>${user.UserName}</td>
+            <td>${user.Password}</td>
+            <td>${user.Message}</td>
+          </tr>`;
+          tableBody.innerHTML += row;
+        });
+      })
+      .catch(err => console.error('Error fetching users:', err));
+  }
+
+  document.getElementById('userForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const userData = {
+      UserName: document.getElementById('username').value,
+      Password: document.getElementById('password').value,
+      Message: document.getElementById('message').value
+    };
+
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Failed to submit");
+      return response.json();
+    })
+    .then(() => {
+      document.getElementById('responseMsg').textContent = 'Data saved successfully!';
+      document.getElementById('userForm').reset();
+      fetchUsers();
+    })
+    .catch(err => {
+      document.getElementById('responseMsg').textContent = 'Error saving data.';
+      console.error(err);
+    });
+  });
+
+  // Load data initially
+  fetchUsers();
+</script>
+
+</body>
+</html>
